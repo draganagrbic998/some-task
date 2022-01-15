@@ -1,5 +1,6 @@
 from typing import List
 
+import requests
 import uvicorn
 from fastapi import FastAPI, Query
 
@@ -110,6 +111,9 @@ def get_shifts(
         results=results,
         links=links,
     )
+
+    requests.post("http://etl_job:8001/api/perform_job", response.json())
+
     return response
 
 

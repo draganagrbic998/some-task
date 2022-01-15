@@ -7,6 +7,17 @@ services:
     restart: on-failure
     ports:
       - "8000:8000"
+    networks:
+      - postgres
+
+  etl_job:
+    build: etl/.
+    container_name: etl_job
+    restart: on-failure
+    ports:
+      - "8001:8001"
+    networks:
+      - postgres
 
   postgres:
     image: postgres
