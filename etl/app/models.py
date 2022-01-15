@@ -16,10 +16,10 @@ class Allowance(BaseModel):
 
 
 class AwardInterpretation(BaseModel):
-    id: str = Field(description="AwardInterpretation UUID")
+    id: str = Field(description="Award interpretation UUID")
     date: str = Field(description="Award interpretation date in YYYY-MM-DD format")
-    units: float = Field(description="AwardInterpretation units")
-    cost: float = Field(description="AwardInterpretation cost")
+    units: float = Field(description="Award interpretation units")
+    cost: float = Field(description="Award interpretation cost")
 
 
 class Shift(BaseModel):
@@ -28,14 +28,16 @@ class Shift(BaseModel):
     start: int = Field(description="Shift start as Unix timestamp in milliseconds")
     finish: int = Field(description="Shift finish as Unix timestamp in milliseconds")
     breaks: List[Break] = Field([], description="List of breaks during shift")
-    allowances: List[Allowance] = Field(
-        [], description="List of allowances during shift"
-    )
-    award_interpretations: List[AwardInterpretation] = Field(
-        [], description="List of shift award interpretations"
-    )
+    allowances: List[Allowance] = Field([], description="List of allowances during shift")
+    award_interpretations: List[AwardInterpretation] = Field([], description="List of shift award interpretations")
     cost: Optional[float] = Field(0, description="Shift total cost")
 
 
 class EtlRequest(BaseModel):
-    results: List[Shift] = Field([], description="Shifts data")
+    results: List[Shift] = Field([], description="Shifts list")
+
+
+class KPI(BaseModel):
+    name: str = Field(description="KPI name")
+    value: float = Field(description="KPI value")
+
