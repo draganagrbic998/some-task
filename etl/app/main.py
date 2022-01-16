@@ -1,38 +1,29 @@
 import uvicorn
-import psycopg2
 import numpy as np
 
 from fastapi import FastAPI
+from sqlalchemy import create_engine
 
 from app.db import bulk_insert
 from app.models import EtlRequest, Shift, KPI
 from app.calculations import get_kpi_statistic
 
 app = FastAPI(title="Etl Job API")
+db_engine = create_engine('postgresql://postgres:postgres@postgres:5432/postgres')
 
 
 @app.post(
     "/api/perform_job",
     summary="Perform Etl Job",
-    description="Returns paginated shifts response. Each response contains "
-    "navigation links with 'prev' and 'next' fields. When response does not contain "
-    "'prev' field, then results correspond to the first page. When response does not "
-    "contain 'next' field, than there are no more results.",
+    description="Consumes data from endpoint, performs KPI transformations  "
+                "and stores results into database.",
+    status_code=201
 )
-def perform_job(request: EtlRequest):
+def perform_job(request: EtlRequest) -> None:
 
     shifts = request.results
-    conn = None
 
-    try:
-        conn = psycopg2.connect(
-            host="postgres",
-            database="postgres",
-            user="postgres",
-            password="postgres"
-        )
-        cur = conn.cursor()
-
+    with db_engine.connect() as conn:
         for shift in shifts:
             shift.cost = np.sum(list(map(lambda allowance: allowance.cost, shift.allowances))) + np.sum(
                 list(map(lambda award: award.cost, shift.award_interpretations)))
@@ -40,18 +31,9 @@ def perform_job(request: EtlRequest):
             for bulk in [bulk_insert('shifts', [shift]), bulk_insert('breaks', shift.breaks, shift),
                          bulk_insert('allowances', shift.allowances, shift), bulk_insert('award_interpretations', shift.award_interpretations, shift)]:
                 if bulk:
-                    cur.execute(bulk)
+                    conn.execute(bulk)
 
-        cur.execute(bulk_insert('kpis', get_kpi_statistic(shifts)))
-        cur.close()
-
-    except (Exception, psycopg2.DatabaseError) as error:
-        print(error)
-
-    finally:
-        if conn is not None:
-            conn.commit()
-            conn.close()
+        conn.execute(bulk_insert('kpis', get_kpi_statistic(shifts)))
 
 
 if __name__ == "__main__":
