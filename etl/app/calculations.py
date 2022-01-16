@@ -54,7 +54,7 @@ def _calculate_max_break_free_shift_period_in_days(shifts: List[Shift]) -> int:
     periods = []
     before_date = None
 
-    for index, shift in enumerate(shifts):
+    for index, shift in enumerate(sorted(shifts, key=lambda x: datetime.strptime(x.date, '%Y-%d-%m'))):
         if len(shift.breaks) <= 0 and not before_date:
             before_date = shift.date
         if len(shift.breaks) > 0 or index == len(shifts) - 1:
