@@ -14,7 +14,7 @@ def bulk_insert(table: str, rows: List[BaseModel], shift: Shift = None) -> str:
     if not rows:
         return None
     return "insert into %s %s values %s on conflict do nothing;" \
-           % (table, COLUMN_MAPPINGS[table], ",".join([TABLE_MAPPINGS[table](row, sh=shift) for row in rows]))
+           % (table, COLUMN_VALUES[table], ",".join([INSERT_COMMANDS[table](row, sh=shift) for row in rows]))
 
 
 def _shift_insert(shf: Shift, **kwargs) -> str:
@@ -59,10 +59,10 @@ def _kpi_insert(kpi: KPI, **kwargs) -> str:
     :param kpi: KPI data needed to be stored in the db
     :return: Value part of SQL insert command for saving KPI
     """
-    return "('%s', current_date, %s)" % (kpi.name, kpi.value)
+    return "('%s', current_timestamp, %s)" % (kpi.name, kpi.value)
 
 
-COLUMN_MAPPINGS = {
+COLUMN_VALUES = {
     "shifts": "",
     "breaks": "",
     "allowances": "",
@@ -70,8 +70,7 @@ COLUMN_MAPPINGS = {
     "kpis": "(kpi_name, kpi_date, kpi_value)"
 }
 
-
-TABLE_MAPPINGS = {
+INSERT_COMMANDS = {
     "shifts": _shift_insert,
     "breaks": _break_insert,
     "allowances": _allowance_insert,

@@ -40,7 +40,7 @@ CREATE TABLE IF NOT EXISTS award_interpretations (
 CREATE TABLE IF NOT EXISTS kpis (
     kpi_id SERIAL PRIMARY KEY,
     kpi_name VARCHAR(255) NOT NULL,
-    kpi_date DATE NOT NULL,
+    kpi_date TIMESTAMP NOT NULL,
     kpi_value NUMERIC(8, 2) NOT NULL,
     UNIQUE (kpi_name, kpi_date)
 )
