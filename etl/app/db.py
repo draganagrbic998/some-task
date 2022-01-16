@@ -13,7 +13,8 @@ def bulk_insert(table: str, rows: List[BaseModel], shift: Shift = None) -> str:
     """
     if not rows:
         return None
-    return "insert into %s %s values %s on conflict do nothing;" % (table, COLUMN_MAPPINGS[table], ",".join([TABLE_MAPPINGS[table](row, sh=shift) for row in rows]))
+    return "insert into %s %s values %s on conflict do nothing;" \
+           % (table, COLUMN_MAPPINGS[table], ",".join([TABLE_MAPPINGS[table](row, sh=shift) for row in rows]))
 
 
 def _shift_insert(shf: Shift, **kwargs) -> str:
@@ -21,7 +22,8 @@ def _shift_insert(shf: Shift, **kwargs) -> str:
     :param shf: Shift data needed to bo stored in the db
     :return: Value part of SQL insert command for saving shift data
     """
-    return "('%s', '%s', to_timestamp(%s), to_timestamp(%s), %s)" % (shf.id, shf.date, shf.start, shf.finish, shf.cost)
+    return "('%s', '%s', to_timestamp(cast(%s/1000 as bigint))::date, to_timestamp(cast(%s/1000 as bigint))::date, %s)" \
+           % (shf.id, shf.date, shf.start, shf.finish, shf.cost)
 
 
 def _break_insert(br: Break, **kwargs) -> str:
@@ -30,7 +32,8 @@ def _break_insert(br: Break, **kwargs) -> str:
     :param sh: Corresponding Shift data
     :return: Value part of SQL insert command for saving break data
     """
-    return "('%s','%s',to_timestamp(%s),to_timestamp(%s),%s)" % (br.id, kwargs['sh'].id, br.start, br.finish, 'true' if br.paid else 'false')
+    return "('%s','%s',to_timestamp(cast(%s/1000 as bigint))::date,to_timestamp(cast(%s/1000 as bigint))::date,%s)" \
+           % (br.id, kwargs['sh'].id, br.start, br.finish, 'true' if br.paid else 'false')
 
 
 def _allowance_insert(al: Allowance, **kwargs) -> str:
@@ -58,6 +61,7 @@ def _kpi_insert(kpi: KPI, **kwargs) -> str:
     """
     return "('%s', current_date, %s)" % (kpi.name, kpi.value)
 
+
 COLUMN_MAPPINGS = {
     "shifts": "",
     "breaks": "",
@@ -66,6 +70,7 @@ COLUMN_MAPPINGS = {
     "kpis": "(kpi_name, kpi_date, kpi_value)"
 }
 
+
 TABLE_MAPPINGS = {
     "shifts": _shift_insert,
     "breaks": _break_insert,
@@ -73,3 +78,4 @@ TABLE_MAPPINGS = {
     "award_interpretations": _award_interpretation_insert,
     "kpis": _kpi_insert
 }
+

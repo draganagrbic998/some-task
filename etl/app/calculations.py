@@ -45,7 +45,7 @@ def _calculate_max_allowance_cost_14d(shifts: List[Shift]) -> float:
     return np.max([np.max(list(map(lambda allowance: allowance.cost, shift.allowances)) or [0]) for shift in shifts_14d] or [0])
 
 
-def _calculate_max_break_free_shift_period_in_days(shifts: List[Shift]) -> float:
+def _calculate_max_break_free_shift_period_in_days(shifts: List[Shift]) -> int:
     """
     :param shifts: List of shifts data
     :return: Longest period in days when consecutive shifts did not have breaks.
